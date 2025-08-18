@@ -1,0 +1,125 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:wght@700&display=swap');
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #FFECED;
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+}
+
+/* Left side info */
+.info-section {
+  flex: 1;
+  padding: 60px;
+  color: #CF7486;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.title {
+  font-family: 'Playfair Display', serif;
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.description {
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+/* Right side form */
+.form-section {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.form-card {
+  background: white;
+  padding: 60px; /* Resetting padding to apply to all sides for simplicity */
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  width: 80%;
+  max-width: 500px;
+}
+
+.form-card h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 36px;
+  color: #CF7486;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.form-card input {
+  width: calc(100% - 30px); /* Adjusted: Reduced width to account for padding */
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+}
+
+.form-card button {
+  width: 100%;
+  padding: 15px;
+  background-color: #CF7486;
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.form-card button:hover {
+  background-color: #b86273;
+}
+
+.toggle-text {
+  font-size: 16px;
+  margin-top: 20px;
+  text-align: center;
+}
+
+.toggle-text span {
+  color: #CF7486;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.message {
+  margin-top: 15px;
+  font-size: 16px;
+  color: red;
+  text-align: center;
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: -10px;
+  margin-bottom: 10px;
+}
+
+.input-error {
+  border: 1px solid red !important;
+}
+
+.forgot-password {
+  text-align: right;
+  margin-top: -10px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.forgot-password span {
+  color: #CF7486;
+  cursor: pointer;
+  font-weight: 600;
+}
+
