@@ -1,70 +1,86 @@
-# Getting Started with Create React App
+# Aralu AI
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**AraluAI** is a website that emphasises menstrual health education for women, men, kids. This period tracker is a small integration surrounding that initiative. 
 
-## Available Scripts
+##  Table of Contents
 
-In the project directory, you can run:
+- [Features](#features)  
+- [Tech Stack](#tech-stack)  
+- [Project Structure](#project-structure)  
+- [Setup & Installation](#setup--installation)  
+- [Usage](#usage)  
 
-### `npm start`
+##  Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- User signup and login (email/password)  
+- Track period start/end and daily moods  
+- View predictions for next period start 
+- Set custom cycle and period lengths  
+- Calendar-based UI built with React
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+##  Tech Stack
 
-### `npm test`
+| Layer        | Technology            |
+|--------------|------------------------|
+| Backend      | Node.js, Express, PostgreSQL |
+| Database     | PostgreSQL             |
+| Authentication | bcrypt password hashing |
+| Prediction   | Python script (`predict.py`) |
+| Frontend     | React (Create React App), HTML, CSS |
+| Dev Tools    | CORS, dotenv           |
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+##  Project Structure
 
-### `npm run build`
+aralu-ai/
+├── public/ 
+├── server/
+│ ├── server.js 
+│ ├── predict.py 
+│ ├── .env 
+│ └── package.json
+├── src/ 
+├── .gitignore 
+├── package.json 
+└── README.md
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+##  Setup & Installation
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+**Prerequisites:**
+- Node.js (>=14.x)
+- Python 3.x
+- PostgreSQL (ensure a database is created)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+# Clone via SSH
+git clone git@github.com:notsoujanya/aralu-ai.git
+cd aralu-ai
 
-### `npm run eject`
+# Install dependencies
+npm install               # Installs React & root-level scripts
+cd server && npm install  # Installs backend dependencies
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+# Create .env inside server/:
+# DB_USER=your_pg_user
+# DB_HOST=your_pg_host
+# DB_DATABASE=your_db_name
+# DB_PASSWORD=your_pg_password
+# DB_PORT=your_pg_port
+# PORT=5001
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+# Run backend
+cd server
+npm start
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+# In a new terminal, run frontend
+npm run start
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+# The React app will open at http://localhost:3000,
+# and backend APIs are served from http://localhost:5001
 
-## Learn More
+# Usage
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Visit the homepage and sign up for an account.  
+- Log in with your credentials.  
+- Use the calendar to log period starts/ends and track mood.  
+- View insights: average cycle/period length, next period prediction, mood stats.  
+- Configure custom cycle/period lengths under the **Your Insights** section.  
