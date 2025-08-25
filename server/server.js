@@ -3,14 +3,13 @@ const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const { spawn } = require('child_process'); 
-
 const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 5001;
 
-//PostgreSQL Database Connection Pool
+// PostgreSQL Database Connection Pool
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
@@ -19,7 +18,7 @@ const pool = new Pool({
   port: process.env.DB_PORT,
 });
 
-// A helper function for centralized error handling
+// Centralized error handling
 const handleError = (res, err, type) => {
   console.error(`${type} error:`, err);
   if (err.code === '23505') {
@@ -28,7 +27,6 @@ const handleError = (res, err, type) => {
   res.status(500).json({ error: `An unexpected error occurred during ${type}.` });
 };
 
-// Middleware
 app.use(express.json());
 app.use(cors());
 
@@ -44,10 +42,10 @@ app.post('/api/signup', async (req, res) => {
   try {
     const passwordHash = await bcrypt.hash(password, 10);
     const result = await pool.query(
-      "INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id",
+      "INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING user_id",
       [email, passwordHash]
     );
-    res.status(201).json({ message: 'Signup successful!', userId: result.rows[0].id });
+    res.status(201).json({ message: 'Signup successful!', userId: result.rows[0].user_id });
   } catch (err) {
     handleError(res, err, 'signup');
   }
@@ -61,57 +59,59 @@ app.post('/api/login', async (req, res) => {
   }
 
   try {
-    const result = await pool.query("SELECT id, password_hash FROM users WHERE email = $1", [email]);
+    const result = await pool.query(
+      "SELECT user_id, password_hash FROM users WHERE email = $1",
+      [email]
+    );
+
     if (result.rows.length === 0) {
       return res.status(401).json({ error: 'User not found.' });
     }
 
     const user = result.rows[0];
     const passwordsMatch = await bcrypt.compare(password, user.password_hash);
+
     if (passwordsMatch) {
-      res.status(200).json({ message: 'Login successful!', userId: user.id });
+      res.status(200).json({ message: 'Login successful!', userId: user.user_id });
     } else {
-      res.status(401).json({ error: 'Incorrect password.' });
+      return res.status(401).json({ error: 'Incorrect password.' });
     }
   } catch (err) {
-    handleError(res, err, 'login');
+    console.error("Login error:", err);
+    res.status(500).json({ error: 'An unexpected error occurred during login.' });
   }
 });
 
 // --- Tracker Data Endpoints ---
 
-// Get all tracker data
 app.get('/api/tracker/data', async (req, res) => {
   const { userId } = req.query;
   if (!userId) {
     return res.status(400).json({ error: 'User ID is required.' });
   }
   try {
-    const [events, moods, profile] = await Promise.all([
-      pool.query("SELECT event_date, event_type FROM period_events WHERE user_id = $1 ORDER BY event_date ASC", [userId]),
+    const [events, moods, user] = await Promise.all([
+      pool.query("SELECT event_date, event_type FROM events WHERE user_id = $1 ORDER BY event_date ASC", [userId]),
       pool.query("SELECT mood_date, mood FROM moods WHERE user_id = $1 ORDER BY mood_date ASC", [userId]),
-      pool.query("SELECT custom_cycle_length, custom_period_length FROM profiles WHERE id = $1", [userId])
+      pool.query("SELECT custom_cycle_length, custom_period_length FROM users WHERE user_id = $1", [userId])
     ]);
 
     let predictedCycleLength = null;
     const periodStarts = events.rows.filter(e => e.event_type === 'start');
 
     if (periodStarts.length >= 2) {
-      // Use 'python3' for better compatibility and add robust error handling
       const pythonProcess = spawn('python3', ['predict.py']);
-      
       const dataToSend = { events: events.rows };
       pythonProcess.stdin.write(JSON.stringify(dataToSend));
       pythonProcess.stdin.end();
 
       let pythonOutput = '';
-      let pythonError = ''; // <-- Capture stderr output
+      let pythonError = '';
 
       pythonProcess.stdout.on('data', (data) => {
         pythonOutput += data.toString();
       });
 
-      // --- IMPORTANT: Listen for errors! ---
       pythonProcess.stderr.on('data', (data) => {
         pythonError += data.toString();
       });
@@ -119,7 +119,7 @@ app.get('/api/tracker/data', async (req, res) => {
       await new Promise((resolve, reject) => {
         pythonProcess.on('close', (code) => {
           if (code !== 0) {
-            console.error(`Python script stderr: ${pythonError}`); // <-- Log the actual error
+            console.error(`Python script stderr: ${pythonError}`);
             return reject(new Error(`Prediction failed: ${pythonError}`));
           }
           try {
@@ -141,15 +141,13 @@ app.get('/api/tracker/data', async (req, res) => {
     res.status(200).json({
       events: events.rows,
       moods: moods.rows,
-      profile: profile.rows[0] || {},
+      profile: user.rows[0] || {},
       predictedCycleLength: predictedCycleLength
     });
   } catch (err) {
-    // Now this catch block will receive the detailed error from the python script
     handleError(res, err, 'data fetch');
   }
 });
-
 
 // Add an event
 app.post('/api/tracker/event', async (req, res) => {
@@ -159,12 +157,11 @@ app.post('/api/tracker/event', async (req, res) => {
   }
   try {
     const result = await pool.query(
-      "INSERT INTO period_events (user_id, event_date, event_type) VALUES ($1, $2, $3) RETURNING *",
+      "INSERT INTO events (user_id, event_date, event_type) VALUES ($1, $2, $3) RETURNING *",
       [userId, event_date, event_type]
     );
     res.status(201).json(result.rows[0]);
-  } catch (err)
- {
+  } catch (err) {
     handleError(res, err, 'event add');
   }
 });
@@ -214,10 +211,10 @@ app.post('/api/tracker/profile', async (req, res) => {
   }
   try {
     const result = await pool.query(
-      "INSERT INTO profiles (id, custom_cycle_length, custom_period_length) VALUES ($1, $2, $3) ON CONFLICT (id) DO UPDATE SET custom_cycle_length = $2, custom_period_length = $3 RETURNING *",
+      "UPDATE users SET custom_cycle_length = $2, custom_period_length = $3 WHERE user_id = $1 RETURNING *",
       [userId, custom_cycle_length, custom_period_length]
     );
-    res.status(201).json(result.rows[0]);
+    res.status(200).json(result.rows[0]);
   } catch (err) {
     handleError(res, err, 'profile update');
   }
